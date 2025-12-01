@@ -1,0 +1,127 @@
+---
+title: "Topic & Workflow Proposal — Oregon Bee Atlas Urbanization Project"
+author: "Andre Cachoua"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output:
+  pdf_document:
+    number_sections: true
+    toc: true
+fontsize: 11pt
+geometry: margin=1in
+bibliography: references.bib
+csl: apa.csl
+---
+1. Topic
+
+Impact of urbanization/habitat fragmentation on bee communities in Oregon, with emphasis on (a) potential seasonal resource gaps in cities and (b) community shifts toward generalist species.
+
+2. Research Questions
+
+Late-season richness: Do urban sites exhibit seasonal resource gaps that reduce late-season (Aug–Oct) bee richness compared to less urban sites?
+
+Generalists vs. specialists: Are generalist bee species proportionally more common in urban areas than in rural/natural mosaics?
+
+3. System & Data
+
+Core: Oregon Bee Atlas (species, date, location; statewide volunteer survey).
+
+Urbanization & land cover:
+
+NLCD Impervious Surface (% impervious as urbanization index).
+
+USDA Cropland Data Layer (land-use intensity; crop context).
+
+Climate & elevation (controls):
+
+PRISM monthly temperature/precipitation normals.
+
+USGS 3DEP elevation.
+
+Phenology (floral timing):
+
+OregonFlora bloom windows (by species/region).
+
+(Optional) ALAN / traffic for sensitivity: VIIRS night lights; OSM roads / FHWA AADT.
+
+Assumed repo paths (adjust as needed):
+
+data/raw/ (unzipped sources)
+
+data/processed/ (merged, analysis-ready)
+
+docs/references.bib, docs/apa.csl
+
+Writing
+Core R packages
+
+library(tidyverse)
+library(lubridate)
+library(sf)
+library(terra)
+library(janitor)
+library(broom)
+library(knitr)
+library(rmarkdown)
+
+Writing
+Project paths (edit to match your repo layout)
+
+dir_raw <- here::here("data", "raw")
+dir_proc <- here::here("data", "processed")
+dir_figs <- here::here("analysis", "bee_figures")
+
+if (!dir.exists(dir_proc)) dir.create(dir_proc, recursive = TRUE)
+if (!dir.exists(dir_figs)) dir.create(dir_figs, recursive = TRUE)
+
+4. Variables & Operational Definitions
+
+Response variables
+
+Richness (S) by site × season (Spring = Mar–May; Summer = Jun–Jul; Late = Aug–Oct).
+
+Generalist proportion: share of individuals/species labeled “generalist” (vs. specialist), based on a trait table (family/genus-level proxy if species-level not available).
+
+Predictors
+
+Urbanization: NLCD % impervious within buffer(s) (e.g., 500 m and 1000 m).
+
+Land-use context: CDL crop/cover proportions in buffer.
+
+Phenology context: # of plant taxa blooming per month (OregonFlora lookup).
+
+Climate controls: PRISM mean temp/precip (seasonal).
+
+Elevation (USGS 3DEP).
+
+Sampling effort control (if available): # visits or net time per site × season.
+
+5. Workflow & Methods
+5.1 Data Ingest & Cleaning
+Writing
+
+
+Assumptions, Limitations & Biases
+
+Sampling bias: Volunteer effort varies spatially/temporally; control via effort proxies if available.
+
+Trait resolution: Specialist/generalist classification may be imperfect; use family/genus proxies with sensitivity checks.
+
+Ethics & Data Management
+
+Cite all sources; avoid revealing sensitive locality information for rare species.
+
+Keep raw data read-only; document all transforms in data/processed/.
+
+Store CRS/projection metadata; include a DATA_DICTIONARY.md.
+
+Reproducibility Plan
+
+Scripted pipeline in this Rmd; seed-setting and sessionInfo() below.
+
+All figures saved to analysis/bee_figures/.
+
+References managed via references.bib + apa.csl.
+
+
+-----------------------
+addming infor to make a new pushcommit
