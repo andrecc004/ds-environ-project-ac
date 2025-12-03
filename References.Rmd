@@ -8,7 +8,7 @@ csl: apa.csl
 
 # Annotated Bibliography
 
-Below are the ten peer-reviewed sources used to support the proposed research on seasonal resource gaps and bee community structure in urbanized areas of Oregon. Each entry follows the assignment structure and includes summary, evaluation, and relevance sections.
+Sources used to support the proposed research on seasonal resource gaps and bee community structure in urbanized areas of Oregon.
 
 ---
 
@@ -17,7 +17,7 @@ Below are the ten peer-reviewed sources used to support the proposed research on
 **URL/DOI:** https://doi.org/10.3390/insects12020128
 
 **Summary:**  
-This paper reviews how urban environments influence bee communities in North America. The authors synthesize published studies on bee traits, nesting modes, and floral resources across city gradients. They report that cities tend to support generalist and cavity-nesting bees, while specialist and ground-nesting species decline. The review highlights the importance of local floral resources and landscape structure in shaping bee diversity. It also identifies gaps such as the need to understand seasonal effects of resource change.
+This paper reviews how urban environments influence bee communities in North America. The authors synthesize published studies on bee traits, nesting modes, and floral resources across city gradients. They reported that cities tend to support generalist and cavity nesting bees, while specialist and ground nesting species decline. The review also highlights the importance of local floral resources and landscape structure in shaping bee diversity. It also identifies gaps such as the need to understand seasonal effects of resource change.
 
 **Evaluation:**  
 The paper has strong breadth and clearly organized themes, but it depends on prior studies that vary in methods and taxonomic resolution. Because it is a review, the conclusions rely on consistency across many small-scale studies rather than standardized data. It remains reliable because it cites many empirical sources and emphasizes clear mechanisms.
