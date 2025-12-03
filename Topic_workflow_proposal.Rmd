@@ -1,127 +1,171 @@
+
 ---
-title: "Topic & Workflow Proposal — Oregon Bee Atlas Urbanization Project"
+title: "Urbanization, Seasonal Resource Gaps, and Late-Season Bee Richness in Oregon"
 author: "Andre Cachoua"
 date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output:
   pdf_document:
     number_sections: true
-    toc: true
-fontsize: 11pt
-geometry: margin=1in
 bibliography: references.bib
 csl: apa.csl
 ---
-1. Topic
+# Literature Review
 
-Impact of urbanization/habitat fragmentation on bee communities in Oregon, with emphasis on (a) potential seasonal resource gaps in cities and (b) community shifts toward generalist species.
+# literature review
 
-2. Research Questions
+Urbanization is expanding quickly in many regions, and it strongly changes local ecosystems. Wild bees are especially affected because they depend on a wide range of flowers that bloom across different parts of the season. Reviews in the field show that cities tend to favor generalist bees, cavity nesting bees, and species that tolerate disturbance [@ayersrehan2021; @remmers2024]. Specialist bees and late season bees often decline under the same conditions. One major reason for these patterns is the availability of flowers. When cities contain many flowering plants, bee diversity can remain stable, and when flowers are limited or patchy richness usually decreases [@wilson2019; @ayersrehan2023]. Urban environments also create warmer microclimates and shift bloom timing, which can cause periods where very few flowers are available. These resource gaps may be particularly harmful for bees that rely on late season flowers.
 
-Late-season richness: Do urban sites exhibit seasonal resource gaps that reduce late-season (Aug–Oct) bee richness compared to less urban sites?
+Research from other regions shows that bee communities in cities change both in their traits and in their seasonal patterns. Studies from Toronto found that urban sites were dominated by generalist species, especially those in the Halictidae and Apidae families, and that this trend became stronger in areas with more impervious cover [@ayersrehan2023]. Bee activity closely followed changes in flower availability throughout the year. Late season flower diversity was one of the strongest predictors of which bees were present. Other studies have shown that smaller species and specialists often decline when late season flowers become scarce or when many managed honey bees compete for flowers [@macinnis2023]. European studies that used DNA metabarcoding to analyze pollen also found strong differences between early and late season flower use. These findings support the idea that seasonal resource gaps may limit the number of species able to persist in urban settings.
 
-Generalists vs. specialists: Are generalist bee species proportionally more common in urban areas than in rural/natural mosaics?
+Although there is a substantial amount of research on seasonal changes in bee communities most of it has been conducted in eastern North America or Europe. Much less is known about these patterns in the Pacific Northwest, and this gap is important because the Pacific Northwest, and Oregon, have a unique combination of climates, vegetation types, and levels of urban development. The Oregon Bee Atlas (OBA) provides a pretty good opportunity to study these patterns across a wide geographic area, it contains records that include bee identity, floral hosts, precise collection dates, and coordinates [@oregonbeeatlas_outline]. To interpret these observations, additional environmental datasets are needed. The NLCD 2021 Impervious Surface Product allows researchers to measure how developed an area is at a fine spatial resolution [@nlcd2021]. PRISM climate data provide monthly temperature and precipitation, which affect both flower bloom timing and bee activity [@prism2024]. If needed, the GBIF version of OBA includes standardized metadata such as coordinate uncertainty and harmonized dates [@oba_gbif2019].
 
-3. System & Data
+The purpose of this study is to determine whether urbanization contributes to seasonal resource gaps and whether these gaps are associated with lower late season bee richness in Oregon. While it is known that cities filter bee communities based on traits, fewer studies examine how the timing of the season interacts with urbanization to influence richness. Oregon is an ideal system for this question because it includes many different climates and degrees of development. The OBA dataset also gives consistent sampling of bees across seasons and locations. By grouping OBA observations into spring, summer, and fall, extracting impervious cover values from NLCD, and combining these with PRISM climate data and floral host richness, this study will provide a clearer understanding of how cities shape bee communities across the flowering season. This is especially important as cities continue to grow and as communities show increasing interest in designing pollinator friendly urban spaces.
 
-Core: Oregon Bee Atlas (species, date, location; statewide volunteer survey).
-
-Urbanization & land cover:
-
-NLCD Impervious Surface (% impervious as urbanization index).
-
-USDA Cropland Data Layer (land-use intensity; crop context).
-
-Climate & elevation (controls):
-
-PRISM monthly temperature/precipitation normals.
-
-USGS 3DEP elevation.
-
-Phenology (floral timing):
-
-OregonFlora bloom windows (by species/region).
-
-(Optional) ALAN / traffic for sensitivity: VIIRS night lights; OSM roads / FHWA AADT.
-
-Assumed repo paths (adjust as needed):
-
-data/raw/ (unzipped sources)
-
-data/processed/ (merged, analysis-ready)
-
-docs/references.bib, docs/apa.csl
-
-Writing
-Core R packages
-
-library(tidyverse)
-library(lubridate)
-library(sf)
-library(terra)
-library(janitor)
-library(broom)
-library(knitr)
-library(rmarkdown)
-
-Writing
-Project paths (edit to match your repo layout)
-
-dir_raw <- here::here("data", "raw")
-dir_proc <- here::here("data", "processed")
-dir_figs <- here::here("analysis", "bee_figures")
-
-if (!dir.exists(dir_proc)) dir.create(dir_proc, recursive = TRUE)
-if (!dir.exists(dir_figs)) dir.create(dir_figs, recursive = TRUE)
-
-4. Variables & Operational Definitions
-
-Response variables
-
-Richness (S) by site × season (Spring = Mar–May; Summer = Jun–Jul; Late = Aug–Oct).
-
-Generalist proportion: share of individuals/species labeled “generalist” (vs. specialist), based on a trait table (family/genus-level proxy if species-level not available).
-
-Predictors
-
-Urbanization: NLCD % impervious within buffer(s) (e.g., 500 m and 1000 m).
-
-Land-use context: CDL crop/cover proportions in buffer.
-
-Phenology context: # of plant taxa blooming per month (OregonFlora lookup).
-
-Climate controls: PRISM mean temp/precip (seasonal).
-
-Elevation (USGS 3DEP).
-
-Sampling effort control (if available): # visits or net time per site × season.
-
-5. Workflow & Methods
-5.1 Data Ingest & Cleaning
-Writing
+Based on prior research, I expect several patterns. First, I predict that urban areas will have a higher proportion of generalist bees compared to rural areas because cities tend to lose specialist species that rely on narrow sets of flowers or more stable habitats [@ayersrehan2021; @wilson2019]. Second, I predict that late season flower richness will be lower in highly urbanized areas because impervious cover and warmer conditions shift bloom timing and reduce late season flower availability [@remmers2024]. Third, I predict that late season bee richness will decline as impervious cover increases, even after accounting for climate and flower richness, because habitat loss and resource gaps reduce the number of bees that can persist into the late season. Finally, I predict that the negative effect of urbanization on richness will be strongest in the late season because bees rely on fewer flowering plants at that point and are more sensitive to reduced floral diversity.
 
 
-Assumptions, Limitations & Biases
+## Hypotheses
 
-Sampling bias: Volunteer effort varies spatially/temporally; control via effort proxies if available.
+**H1 Trait filtering:**  
+I predict that urban areas will have a higher proportion of generalist bees compared to rural areas because cities tend to remove specialist species that rely on narrow sets of flowers or more stable habitats [@ayersrehan2021; @wilson2019].
 
-Trait resolution: Specialist/generalist classification may be imperfect; use family/genus proxies with sensitivity checks.
+**H2 Seasonal resource gaps:**  
+I predict that late season flower richness will be lower in highly urbanized areas compared to less developed areas because impervious surfaces and warmer temperatures shift bloom timing and reduce the number of flowers available later in the year [@remmers2024].
 
-Ethics & Data Management
+**H3 Richness decline:**  
+I predict that late season bee richness will decrease as impervious surface increases, even after accounting for climate and flower richness, because habitat loss and resource gaps reduce the number of bees that can remain active late in the season.
 
-Cite all sources; avoid revealing sensitive locality information for rare species.
-
-Keep raw data read-only; document all transforms in data/processed/.
-
-Store CRS/projection metadata; include a DATA_DICTIONARY.md.
-
-Reproducibility Plan
-
-Scripted pipeline in this Rmd; seed-setting and sessionInfo() below.
-
-All figures saved to analysis/bee_figures/.
-
-References managed via references.bib + apa.csl.
+**H4 Interaction effect:**  
+I predict that the negative effect of urbanization on bee richness will be strongest in the late season because bees rely on fewer flowering plants at that point and are more sensitive to reduced floral diversity.
 
 
------------------------
-addming infor to make a new pushcommit
+# Dataset identification
+
+## Oregon Bee Atlas (Primary dataset)
+
+- **URL:** https://www.oregonbeeatlas.org  
+- **Collector & methods:** Trained volunteers conducted walking scan censuses statewide, netting bees from flowering plants and recording bee species, plant genus, date, and GPS location.  
+- **Key columns/units:**  
+  - `date` (YYYY-MM-DD)  
+  - `latitude`, `longitude` (decimal degrees)  
+  - `bee_species` (categorical)  
+  - `plant_genus` (categorical)  
+  - `county` (categorical)  
+  - `collector` (character)  
+
+### OBA → transformed dataset (plan & rationale)
+
+- **Plan:**  
+  - Convert individual records into **seasonal summaries** by:  
+    - Assigning each observation to **spring, summer, or fall** based on sampling date.  
+    - Defining **sites** (for example, by county or by spatially clustered coordinates).  
+    - Aggregating to *site × season* to calculate:  
+      - Bee species richness  
+      - Floral host richness  
+      - Proportion of generalist vs. specialist species  
+      - Sampling effort (e.g., number of observations per site × season)  
+
+- **Rationale:**  
+  Aggregating to the site × season level reduces noise from uneven sampling and directly aligns with the study’s hypotheses about seasonal richness patterns and urbanization. Seasonal, site-level richness and trait composition provide a natural scale at which to test how urbanization and climate affect late-season bee communities while still using the detailed OBA records.
+
+---
+
+## NLCD 2021 Impervious Surface Product
+
+- **URL:** https://www.mrlc.gov  
+- **Collector & methods:** U.S. Geological Survey; imperviousness is derived from Landsat satellite imagery and ancillary datasets using land-cover classification models.  
+- **Columns/units:**  
+  - Impervious surface as a percentage (0–100) at 30-m resolution  
+  - Additional descriptor information for built structures and roads (in companion layers)  
+
+- **Use in project:**  
+  - Extract impervious surface values around each OBA site (for example, within 500–1000 m buffers).  
+  - Use these values as a continuous **urbanization intensity** metric in models and visualizations.
+
+---
+
+## PRISM Climate Data (Monthly normals)
+
+- **URL:** https://prism.oregonstate.edu  
+- **Collector & methods:** PRISM Climate Group at Oregon State University; uses weather station data and terrain-informed regression to generate high-resolution climate surfaces (~800 m).  
+- **Columns/units:**  
+  - Monthly mean temperature (°C)  
+  - Monthly precipitation (mm)  
+  - Additional derived climate variables (e.g., minimum/maximum temperature)  
+
+- **Use in project:**  
+  - Extract **seasonal mean temperature** (and optionally precipitation) for each site × season.  
+  - Use these variables to account for climate-driven differences in flowering phenology and bee activity when testing urbanization effects.
+
+---
+
+## (Optional) GBIF implementation of OBA dataset
+
+- **URL:** https://www.gbif.org  
+- **Collector & methods:** GBIF-hosted occurrence records derived from Oregon Bee Atlas submissions; standardized using GBIF’s Darwin Core fields.  
+- **Useful fields:**  
+  - `eventDate` (standardized sampling date)  
+  - `decimalLatitude`, `decimalLongitude`  
+  - `coordinateUncertaintyInMeters`  
+  - `scientificName`, `taxonID`  
+
+- **Use in project:**  
+  - Supplemental metadata for quality control, such as filtering records with high coordinate uncertainty or checking taxonomic consistency.  
+  - May be used if additional harmonized fields are needed beyond the primary OBA CSV.
+
+
+
+## Workflow plan (prose)
+
+### 1) Cleaning & validation
+- Import the raw Oregon Bee Atlas (OBA) CSV.  
+- Remove records missing species identifications, dates, or coordinates.  
+- Standardize bee species names (lowercase, trim whitespace) and plant genus names.  
+- Remove any non-bee or ambiguous entries if present.  
+- Convert `date` to a proper Date class and derive `month`, then assign each record to **spring, summer, or fall** using a custom season function.  
+- Validate coordinates, and remove points that fall outside Oregon’s boundary (e.g., using an Oregon shapefile).  
+- Inspect sampling effort by month and by site to identify potential seasonal or spatial biases.
+
+### 2) Aggregations & derivations
+- Extract **impervious surface values** for each OBA coordinate using the NLCD 2021 impervious surface raster, optionally applying 500–1000 m buffers to capture landscape context.  
+- Extract **PRISM climate variables** (monthly mean temperature, optionally precipitation) for each coordinate and compute **seasonal mean temperature** for each site × season.  
+- Define “sites” either by county, or by clustering spatially close observations.  
+- Aggregate the OBA data to **site × season**, calculating:  
+  - Bee species richness  
+  - Floral host richness (unique plant genera visited)  
+  - Proportion of generalist vs. specialist bee species  
+  - Seasonal mean temperature  
+  - Sampling effort (number of observations)  
+- Combine all derived variables into a unified analysis dataframe.
+
+### 3) Functions / loops (inputs → outputs)
+- Write `assign_season(date)` → **input:** month; **output:** season label (“spring”, “summer”, “fall”).  
+- Create a wrapper function for raster extraction, e.g., `extract_raster_values(points, raster)` that returns impervious or climate values for all points.  
+- Write a summarization function that takes all observations from a site and returns the seasonal metrics described above.  
+- Optionally use `purrr::map()` or `dplyr::group_by()` to avoid explicit loops, depending on coding style.
+
+### 4) Statistical tests & programmatic implementation
+- Fit generalized linear models or linear mixed models of the form:  
+
+- Fit a similar model for the proportion of generalists.  
+- For robustness, implement a **permutation test**:  
+- Shuffle `season` labels *within sites* many times (e.g., 999 permutations).  
+- Recompute a test statistic such as the difference in richness between urban and rural sites.  
+- Compare the observed value to the null distribution to obtain a permutation-based p-value.  
+
+### 5) Planned visualizations and tables
+- A map of Oregon showing all OBA sampling points overlaid on the NLCD impervious surface layer.  
+- Boxplots or violin plots of **bee richness by season**, split by urbanization tier (e.g., low, medium, high impervious).  
+- Scatterplots of **impervious surface vs. late-season richness**, optionally with regression lines.  
+- Lineplots showing **seasonal floral host richness** across the urbanization gradient.  
+- Coefficient plots (e.g., using `broom::tidy()` + `ggplot2`) showing model estimates and confidence intervals.  
+- A summary table of seasonal richness, floral richness, and urbanization metrics.
+
+### 6) Risks & mitigations
+- **Uneven sampling effort:** Include sampling effort as a covariate, or use richness estimators or rarefaction where appropriate.  
+- **Biased late-season sampling:** Evaluate monthly sampling distributions and, if necessary, restrict analyses to sites with minimum effort thresholds.  
+- **Coordinate uncertainty (if using GBIF records):** Remove points with uncertainty > 100 m or another threshold suited to analysis scale.  
+- **Impervious cover resolution:** To reduce noise from single-pixel extraction, use buffer-based averages (e.g., 500 m mean imperviousness).  
+- **Spatial autocorrelation:** Consider including random effects for counties or ecoregions, or using spatially robust standard errors.
+
+
