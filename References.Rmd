@@ -1,0 +1,177 @@
+---
+title: "Annotated Bibliography — Bee Atlas Urbanization Project"
+author: "Andre Cachoua"
+output: pdf_document
+bibliography: references.bib
+csl: apa.csl
+---
+
+# Annotated Bibliography
+
+Below are the ten peer-reviewed sources used to support the proposed research on seasonal resource gaps and bee community structure in urbanized areas of Oregon. Each entry follows the assignment structure and includes summary, evaluation, and relevance sections.
+
+---
+
+## Ayers & Rehan (2021). Supporting Bees in Cities.
+**Citation:** @ayersSupportingBeesCities2021  
+**URL/DOI:** https://doi.org/10.3390/insects12020128
+
+**Summary:**  
+This paper reviews how urban environments influence bee communities in North America. The authors synthesize published studies on bee traits, nesting modes, and floral resources across city gradients. They report that cities tend to support generalist and cavity-nesting bees, while specialist and ground-nesting species decline. The review highlights the importance of local floral resources and landscape structure in shaping bee diversity. It also identifies gaps such as the need to understand seasonal effects of resource change.
+
+**Evaluation:**  
+The paper has strong breadth and clearly organized themes, but it depends on prior studies that vary in methods and taxonomic resolution. Because it is a review, the conclusions rely on consistency across many small-scale studies rather than standardized data. It remains reliable because it cites many empirical sources and emphasizes clear mechanisms.
+
+**Relevance:**  
+This paper supports the hypothesis that urbanization filters bee communities toward generalists. It also helps justify measuring floral richness and nesting traits in the Oregon Bee Atlas dataset.
+
+**Tags:** traits, urban ecology, floral resources
+
+---
+
+## Davey et al. (2024). Seasonal variation in urban pollen resource use.
+**Citation:** @daveySeasonalVariationUrban2024  
+**URL/DOI:** https://doi.org/10.1007/s11252-023-01395-y
+
+**Summary:**  
+This study analyzed pollen collected by honey bees across urban sites in Oslo to describe seasonal changes in floral resource use. The authors used DNA metabarcoding to identify plant taxa across spring, summer, and fall. They found strong seasonal turnover, where early-season pollen came mostly from non-native ornamentals while late-season pollen came from native species. They also observed that pollen diversity declined late in the year. Results show that seasonal resource gaps can form even where total plant diversity is high.
+
+**Evaluation:**  
+The use of DNA metabarcoding provides detailed plant-level identification, but the study centers on honey bees rather than wild bee communities. Honey bees forage widely, which can blur fine-scale floral shortages. Despite this limitation, the study provides high-quality evidence of seasonal resource patterns.
+
+**Relevance:**  
+This work supports the idea that late-season floral availability may decline in cities. It informs the decision to test late-season bee richness as an outcome variable.
+
+**Tags:** phenology, pollen, floral resources
+
+---
+
+## Remmers et al. (2024). Bees in the City.
+**Citation:** @remmersBeesCityFindings2024  
+**URL/DOI:** https://doi.org/10.1007/s13280-023-02064-1
+
+**Summary:**  
+This scoping review summarizes more than 250 studies on urban bee ecology. It identifies consistent patterns across cities, including higher diversity in natural areas and strong filtering toward disturbance-tolerant bee species in urban spaces. The review highlights how plant diversity, patch size, and green infrastructure influence bee richness. It also notes that trait-based responses differ by region and climate.
+
+**Evaluation:**  
+The study is comprehensive and includes global literature, but findings vary widely due to inconsistent sampling methods and definitions of "urban." It does not provide region-specific detail for the Pacific Northwest. However, the authors clearly outline known mechanisms and research gaps.
+
+**Relevance:**  
+The review strengthens the theoretical foundation for studying seasonal resource gaps and urban filtering. It helps justify testing trait composition and impervious surface effects in Oregon.
+
+**Tags:** urbanization, trait filtering, review
+
+---
+
+## Rojas-Solis et al. (2023). Arsenic and mercury tolerant rhizobacteria.
+**Citation:** @rojas-solisArsenicMercuryTolerant2023  
+**URL/DOI:** https://doi.org/10.1007/s00284-022-03074-5
+
+**Summary:**  
+This study characterizes rhizobacteria tolerant to toxic metals in polluted soils. The authors isolated bacterial strains capable of surviving high arsenic and mercury concentrations and evaluated their potential roles in soil remediation. Results show that microbial communities shift under heavy metal stress and that tolerant strains help stabilize soils and support plant growth.
+
+**Evaluation:**  
+Although the methods are rigorous for microbiology, the focus is not pollinators or urban ecology. The ecological context differs from the bee community framework. The paper is still high-quality, with clear lab protocols and reproducible analyses.
+
+**Relevance:**  
+This source is only indirectly relevant because it helps explain how soil conditions can influence plant communities, which eventually impacts floral resources. It is not central but can be cited in broader environmental context.
+
+**Tags:** soil microbes, tolerance, pollution
+
+---
+
+## Wilson & Jamieson (2019). Effects of urbanization on bee communities.
+**Citation:** @wilsonEffectsUrbanizationBee2019  
+**URL/DOI:** https://doi.org/10.1371/journal.pone.0225852
+
+**Summary:**  
+This empirical study sampled bee communities across an urban to rural gradient in Michigan. The authors collected bees and measured plant diversity at 15 sites. They found that urbanization increased evenness but did not change total richness. Urban sites had more exotic and cavity-nesting bees, and floral richness remained the strongest predictor of diversity. Trait responses varied by nesting mode and diet breadth.
+
+**Evaluation:**  
+The study uses standardized sampling and includes plant and bee data, which strengthens its conclusions. However, the gradient covers only one region and uses moderate sample sizes. Results may not generalize to landscapes with stronger climate gradients like Oregon.
+
+**Relevance:**  
+The results support testing generalist vs. specialist composition and floral richness in the OBA dataset. It also justifies controlling for floral host diversity in analysis.
+
+**Tags:** gradients, traits, floral richness
+
+---
+
+## Oregon Department of Agriculture (2021). Oregon Bee Atlas Research Outline.
+**Citation:** @oregondepartmentofagricultureOregonBeeAtlas2021  
+**URL:** https://www.oregonbeeproject.org
+
+**Summary:**  
+This document outlines the methods and goals of the Oregon Bee Atlas project. It describes volunteer training, survey protocol, specimen processing, and host-plant recording. The program uses standardized walking surveys and detailed location records. The dataset includes thousands of bee and plant observations across all Oregon counties.
+
+**Evaluation:**  
+The outline is descriptive rather than analytical, but it provides essential sampling context. The absence of raw statistical evaluation limits its analytical depth. Still, it is authoritative because it comes from the program managers.
+
+**Relevance:**  
+This source explains how the OBA dataset was built, which supports decisions on cleaning, filtering, and interpreting sampling effort.
+
+**Tags:** methods, survey design
+
+---
+
+## Oregon Bee Atlas Survey Data 2019 (GBIF dataset).
+**Citation:** @oregonBeeAtlasSurvey2019  
+**URL/DOI:** *Use your GBIF download DOI*
+
+**Summary:**  
+This dataset includes more than 25,000 bee occurrence records collected by Oregon volunteers in 2019. It documents bee species, floral hosts, dates, coordinates, and collection conditions. The dataset covers all counties and includes standardized taxonomy and metadata. It also supports cross-reference of species names and event dates.
+
+**Evaluation:**  
+The dataset is comprehensive but has uneven sampling effort across regions and seasons. Volunteer data require careful validation and cleaning. Metadata fields such as coordinate uncertainty improve transparency.
+
+**Relevance:**  
+This dataset is the core for testing seasonal patterns, resource gaps, and urbanization impacts in Oregon.
+
+**Tags:** dataset, observations, Oregon
+
+---
+
+## PRISM Climate Data (2024).
+**Citation:** @prismclimategroupPRISMClimateData2024  
+**URL:** https://prism.oregonstate.edu
+
+**Summary:**  
+PRISM provides monthly climate fields including temperature and precipitation. It uses weather station data and terrain-based regression to model climate at high resolution. The dataset is widely used for ecological analysis. Monthly temperature is relevant for understanding phenology and bee activity.
+
+**Evaluation:**  
+The model uses strong interpolation methods, but coarse temporal resolution can obscure microclimate variation. It remains one of the most reliable climate datasets for the United States.
+
+**Relevance:**  
+PRISM temperature helps control for climate effects when analyzing seasonal richness in bee communities.
+
+**Tags:** climate, temperature, seasonality
+
+---
+
+## National Land Cover Database (NLCD) Impervious Surface (2021).
+**Citation:** @nlcd2021  
+**URL:** https://www.mrlc.gov
+
+**Summary:**  
+NLCD provides percent impervious cover at 30 meter resolution. It uses Landsat images and decision-tree models to classify built surfaces. Impervious cover is a widely used index of urbanization intensity. The dataset covers the entire United States.
+
+**Evaluation:**  
+Accuracy varies by biome and urban density, and resolution can miss fine-scale habitat features. Still, it is the standard dataset for large-scale urbanization analysis.
+
+**Relevance:**  
+This dataset will be used to measure urbanization around each OBA sampling site to test whether late-season richness declines with imperviousness.
+
+**Tags:** land cover, urbanization
+
+---
+
+# Provenance Log
+
+- The Oregon Bee Atlas dataset was downloaded from the Oregon Bee Project website as a CSV.  
+- The NLCD impervious surface raster was downloaded from MRLC.  
+- PRISM monthly normals were downloaded from the PRISM Climate Group.  
+- All data were imported through this Rmd and processed using tidyverse, terra, and sf.  
+- Spatial extraction of climate and impervious values was completed with terra::extract.  
+- No data cleaning was done outside this Rmd.  
+- All transformations and filtering steps are documented in code.  
+
