@@ -11,34 +11,13 @@ To test whether urban regions show *lower late-season bee richness* and whether 
 
 **Core Research Questions:**
 1. Do urban sites exhibit seasonal resource gaps that reduce late-season bee diversity?
-2. Are generalist bee species proportionally more common in urban areas?
-3. How do floral richness and land-use intensity relate to bee community structure?
+
 
 **Key Datasets:**
 - **Oregon Bee Atlas** (species occurrence & sampling data)
-- **USDA Cropland Data Layer** (land-use intensity)
 - **NLCD Impervious Surface Dataset** (urbanization index)
 - **PRISM Climate Data** (temperature & precipitation normals)
-- **OregonFlora** (flowering phenology)
+
 
 ---
-
-## Repository Structure
-
-```plaintext
-├── data/
-│   ├── raw/          
-│   ├── processed/     
-├── analysis/
-│   ├── bee_analysis.Rmd    
-│   ├── bee_figures/     
-│
-├── docs/
-│   ├── bee_project_annotated_bibliography.Rmd  
-│   ├── references.bib   
-│
-├── outputs/
-│   ├── results_tables/   
-│   ├── final_report.pdf    
-│
-└── README.md            
+  
