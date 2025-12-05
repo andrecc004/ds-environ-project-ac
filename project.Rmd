@@ -15,26 +15,577 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 ```{r bees}
-# Load packages (install first if needed)
+
 library(dplyr)
 library(readr)  
-library(sf)      
+library(tidyverse)
+library(sf)
+library(terra)
 
-# Path to your file
 bee_path <- "/Users/andrecc/Desktop/DSCI/410Project/OBA_2018-2024.csv"
 
-# Read in
+
 bee_raw <- read_csv(bee_path)
 
-# Quick peek
+
 glimpse(bee_raw)
+
+
+```
+```{r oregon_shape}
+library(tigris)
+options(tigris_use_cache = TRUE)
+
+# Oregon boundary in WGS84 lon/lat
+or_shape <- states(cb = TRUE, year = 2024) |>
+  dplyr::filter(STUSPS == "OR") |>
+  sf::st_transform(4326)
+```
+
+```{r}
+# ---- PRISM: late-season temperature by year ----
+
+prism_folder <- "/Users/andrecc/Desktop/DSCI/410Project/Data/prism_monthly"
+
+prism_tifs <- list.files(
+  prism_folder,
+  pattern = "\\.tif$",
+  full.names = TRUE,
+  recursive = TRUE
+)
+
+# Read all 14 rasters (2018–2024, Sept & Oct)
+prism_all <- rast(prism_tifs)
+
+# Years covered by your PRISM files
+late_years <- 2018:2024
+
+# For each year, average Sept + Oct into one raster
+late_list <- list()
+
+for (i in seq_along(late_years)) {
+  lyr1 <- (2 * i) - 1  # September layer index
+  lyr2 <- 2 * i        # October layer index
+  
+  late_list[[i]] <- mean(prism_all[[c(lyr1, lyr2)]])
+}
+
+# Stack of late-season mean temp per year
+prism_late_stack <- rast(late_list)
+names(prism_late_stack) <- paste0("late_", late_years)
+
+
+prism_late_mean <- mean(prism_late_stack)
+
+prism_late_stack
+prism_late_mean
+
+prism_tmean_late <- prism_late_mean
 
 ```
 
 ```{r}
 
 
+# 1. Read and clean data
+
+
+bee_raw_path <- "/Users/andrecc/Desktop/DSCI/410Project/OBA_2018-2024.csv"
+
+bee_raw <- read_csv(bee_raw_path)
+
+bee_clean <- bee_raw %>%
+  filter(!is.na(decimalLongitude)) %>%
+  filter(!is.na(decimalLatitude)) %>%
+  filter(!is.na(year)) %>%
+  filter(!is.na(month)) %>%
+  filter(!is.na(scientificName))
+
+# month is a character, make it an integer
+bee_clean <- bee_clean %>%
+  mutate(
+    month = as.integer(month)
+  )
+
+bee_clean <- bee_clean %>%
+  mutate(
+    season = case_when(
+      month %in% 3:5  ~ "spring",
+      month %in% 6:8  ~ "summer",
+      month %in% 9:10 ~ "late",
+      TRUE            ~ "off"
+    )
+  ) %>%
+  filter(season != "off")
+
+# define site_id purely from coordinates
+bee_clean <- bee_clean %>%
+  mutate(
+    site_id = paste0(
+      round(decimalLatitude, 4),
+      "_",
+      round(decimalLongitude, 4)
+    ),
+    late_season = if_else(season == "late", 1L, 0L)
+  )
+# -----------------------------
+# 1a. Trait-like info from OBA
+# -----------------------------
+# Host breadth for each bee species = how many different plant species
+# it was recorded on in the OBA data.
+
+bee_traits <- bee_clean %>%
+  filter(!is.na(scientificName),
+         !is.na(speciesPlant)) %>%
+  group_by(scientificName) %>%
+  summarise(
+    n_host_plants = n_distinct(speciesPlant),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    # simple rule: 3+ plant species in OBA => "generalist"
+    generalist = if_else(n_host_plants >= 3, 1L, 0L)
+  )
+
+# -----------------------------
+# 2. Aggregate to site x year x season richness
+# -----------------------------
+
+# -----------------------------
+# 2. Aggregate to site x year x season richness
+# -----------------------------
+
+# (i) proportion of generalists per site-year-season
+bee_generalist_by_site <- bee_clean %>%
+  left_join(bee_traits, by = "scientificName") %>%
+  group_by(site_id, year, season) %>%
+  summarise(
+    prop_generalist = mean(generalist, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# (ii) bee + floral richness per site-year-season
+bee_richness <- bee_clean %>%
+  group_by(site_id, year, season) %>%
+  summarise(
+    n_records        = n(),
+    richness_species = n_distinct(scientificName),
+    floral_richness  = n_distinct(speciesPlant, na.rm = TRUE),
+    lat              = first(decimalLatitude),
+    lon              = first(decimalLongitude),
+    .groups          = "drop"
+  ) %>%
+  left_join(bee_generalist_by_site,
+            by = c("site_id", "year", "season"))
+
+###
+  # Get late-season tmean for each siteyear
+bee_climate_list <- list()
+
+for (yy in late_years) {
+  # subset bee richness for that year
+  sub_df <- bee_richness %>%
+    filter(year == yy)
+  
+  if (nrow(sub_df) == 0) next
+  
+  # make sf using the same CRS as PRISM
+  sub_sf <- st_as_sf(
+    sub_df,
+    coords = c("lon", "lat"),
+    crs = crs(prism_late_stack)
+  )
+  
+  # extract from the raster for that year
+  tvals <- terra::extract(
+    prism_late_stack[[paste0("late_", yy)]],
+    vect(sub_sf)
+  )[ , 2]
+  
+  sub_df$tmean_late <- tvals
+  bee_climate_list[[as.character(yy)]] <- sub_df
+}
+
+bee_climate <- bind_rows(bee_climate_list) %>%
+  select(site_id, year, season, tmean_late)
+
+###
+# late-season subset if needed later
+bee_rich_late <- bee_richness %>%
+  filter(season == "late")
+
+# spatial version (same as before)
+bee_rich_sf <- st_as_sf(
+  bee_richness,
+  coords = c("lon", "lat"),
+  crs    = 4326
+)
+
+```
+
+
+```{r}
+nlcd_path <- "/Users/andrecc/Desktop/DSCI/410Project/Data/Annual_NLCD_ImpDsc_2019_CU_C1V1/Annual_NLCD_ImpDsc_2019_CU_C1V1.tif"
+
+nlcd_imp <- rast(nlcd_path)
+
+nlcd_imp
+
+bee_rich_sf_nlcd <- st_transform(bee_rich_sf, crs = crs(nlcd_imp))
+
+
+```
+
+```{r}
+imp_extract <- terra::extract(nlcd_imp, vect(bee_rich_sf_nlcd))
+
+# Drop the ID column terra adds; keep the impervious value
+imp_values <- terra::extract(nlcd_imp, vect(bee_rich_sf_nlcd))
+imp_values <- imp_values[, 2]
+
+bee_rich_covars <- bee_richness %>%
+  mutate(impervious = imp_values) %>%
+  left_join(bee_climate, by = c("site_id", "year", "season")) %>%
+  filter(!is.na(impervious),
+         !is.na(tmean_late))
+
+
+str(bee_rich_covars)
+
+
+bee_model_data <- bee_rich_covars %>%
+  filter(
+    !is.na(impervious),
+    !is.na(tmean_late),
+    n_records > 0
+  ) %>%
+  mutate(
+    # use impervious as an ordered factor, not a fake numeric
+    impervious = factor(
+      impervious,
+      levels = c("Non-Urban", "Roads", "Urban")
+    ),
+    season = factor(
+      season,
+      levels = c("spring", "summer", "late")
+    )
+  )
+
+```
+
+```{r}
+# 1. Reproject Oregon boundary to PRISM CRS (same as prism_late_mean)
+or_shape_prism <- st_transform(or_shape, crs(prism_late_mean))
+
+# 2. Get bounding box around Oregon in PRISM CRS
+or_bbox <- st_bbox(or_shape_prism)
+
+
+x_pad <- 0.3    # degrees longitude
+y_pad <- 0.3    # degrees latitude
+
+oregon_ext <- ext(
+  or_bbox["xmin"] - x_pad,
+  or_bbox["xmax"] + x_pad,
+  or_bbox["ymin"] - y_pad,
+  or_bbox["ymax"] + y_pad
+)
+
+
+prism_late_or <- crop(prism_late_mean, oregon_ext)
+
+
+plot(prism_late_or, main = "Late-season mean temperature (PRISM)")
+plot(or_shape_prism$geometry, add = TRUE, border = "black", lwd = 2)
+
+
+```
 
 
 
 
+```{r nlcd_oregon_plot}
+
+# 1. Reproject Oregon boundary to NLCD CRS (Albers) so we can crop there
+or_shape_nlcd <- st_transform(or_shape, crs(nlcd_imp))
+
+# 2. Crop NLCD to a small area around Oregon in its native CRS
+nlcd_or_aea <- crop(nlcd_imp, vect(or_shape_nlcd))
+
+# 3. Reproject that cropped NLCD chunk to lon/lat (EPSG:4326)
+nlcd_or_ll <- project(
+  nlcd_or_aea,
+  "EPSG:4326",
+  method = "near"   # keep categorical classes
+)
+
+# 4. Mask the reprojected raster to the Oregon polygon in lon/lat
+nlcd_or_ll <- mask(nlcd_or_ll, vect(or_shape))
+
+# 5. Bee points in lon/lat (4326)
+bee_rich_sf_ll <- st_transform(bee_rich_sf, 4326)
+
+# 6. Plot: Oregon-shaped NLCD + bee sites
+plot(nlcd_or_ll,
+     main = "NLCD impervious (Oregon) with bee sites")
+
+plot(st_geometry(or_shape),
+     add   = TRUE,
+     border = "green",
+     lwd    = 2)
+
+points(st_coordinates(bee_rich_sf_ll),
+       pch = 16,
+       cex = 0.5,
+       col = "red")
+
+
+```
+
+```{r}
+
+
+st_crs(bee_rich_sf)       # original bee points (WGS84 lon/lat)
+st_crs(bee_rich_sf_nlcd)  # bee points reprojected to NLCD CRS
+st_crs(bee_rich_sf_ll)    # bee points used on the final NLCD map, in lon/lat
+
+
+
+# PRISM mean late-season (Oregon crop)
+crs(prism_late_mean)
+res(prism_late_mean)
+
+# NLCD original (CONUS, Albers Equal Area)
+crs(nlcd_imp)
+res(nlcd_imp)
+
+# NLCD cropped around Oregon,
+crs(nlcd_or_aea)
+res(nlcd_or_aea)
+
+# NLCD reprojected to lon/lat and masked to Oregon 
+crs(nlcd_or_ll)
+res(nlcd_or_ll)
+
+```
+```{r}
+# 1. Reproject bee points to NLCD CRS for extraction
+bee_rich_sf_nlcd <- st_transform(bee_rich_sf, crs(nlcd_imp))
+
+# 2. Extract impervious values (data.frame with ID + value)
+imp_df <- terra::extract(nlcd_imp, vect(bee_rich_sf_nlcd))
+imp_vals <- imp_df[, 2]   # second column is the value
+
+# 3. Extract late-season mean temperature from PRISM
+tmean_df <- terra::extract(prism_tmean_late, vect(bee_rich_sf))
+tmean_vals <- tmean_df[, 2]
+
+```
+
+```{r}
+bee_model_data <- bee_rich_covars %>%
+  filter(
+    !is.na(impervious),
+    !is.na(tmean_late),
+    n_records > 0
+  ) %>%
+  mutate(
+    # keep impervious as a factor for the GLM
+    impervious = factor(impervious),
+
+    impervious_num = as.numeric(impervious),
+    season = factor(season,
+                    levels = c("spring", "summer", "late"))
+  )
+
+```
+
+```{r}
+#main poission model
+mod1_pois <- glm(
+  richness_species ~ impervious * season + tmean_late,
+  offset = log(n_records),
+  family = poisson,
+  data   = bee_model_data
+)
+
+summary(mod1_pois)
+
+# Simpler model without interaction
+mod1_simple <- glm(
+  richness_species ~ impervious + season + tmean_late,
+  offset = log(n_records),
+  family = poisson,
+  data   = bee_model_data
+)
+
+summary(mod1_simple)
+
+AIC(mod1_pois, mod1_simple)
+
+```
+```{r}
+# Over dispersion check
+overdispersion <- sum(residuals(mod1_pois, type = "pearson")^2) /
+                  df.residual(mod1_pois)
+overdispersion
+
+par(mfrow = c(2, 2))
+plot(mod1_pois)
+par(mfrow = c(1, 1))
+
+# Residuals vs fitted by season
+bee_model_data$resid_pearson <- residuals(mod1_pois, type = "pearson")
+bee_model_data$fitted        <- fitted(mod1_pois)
+
+ggplot(bee_model_data, aes(x = fitted, y = resid_pearson, colour = season)) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(alpha = 0.6) +
+  theme_minimal() +
+  labs(
+    title = "Residuals vs fitted (Poisson GLM)",
+    x     = "Fitted richness",
+    y     = "Pearson residuals"
+  )
+
+```
+
+```{r}
+bee_glm_no_int <- glm(
+  richness_species ~ impervious_num + season + tmean_late,
+  family = poisson,
+  data   = bee_model_data,
+  offset = log(n_records)
+)
+
+# Pearson dispersion statistic
+dispersion <- sum(residuals(mod1_pois, type = "pearson")^2) / mod1_pois$df.residual
+dispersion
+
+
+```
+
+```{r}
+# quick overdispersion check
+pearson_disp <- sum(residuals(mod1_pois, type = "pearson")^2) / df.residual(mod1_pois)
+pearson_disp
+
+# filter to late season only
+bee_late <- bee_model_data %>%
+  filter(season == "late")
+
+mod_late <- glm(
+  richness_species ~ impervious + tmean_late,
+  offset = log(n_records),
+  family = poisson,
+  data   = bee_late
+)
+
+summary(mod_late)
+
+
+```
+```{r}
+par(mfrow=c(1,2))
+
+plot(mod1_pois$fitted.values, residuals(mod1_pois, type="pearson"),
+     main="Pearson residuals", xlab="Fitted", ylab="Residuals")
+
+plot(mod1_pois$fitted.values, residuals(mod1_pois, type="deviance"),
+     main="Deviance residuals", xlab="Fitted", ylab="Residuals")
+
+abline(h=0, col="red")
+```
+```{r}
+# Fit simpler no-interaction model
+mod1_simple <- glm(
+  richness_species ~ impervious_num + season + tmean_late,
+  offset = log(n_records),
+  family = poisson,
+  data   = bee_model_data
+)
+
+AIC(mod1_pois, mod1_simple)
+```
+
+
+```{r}
+# summary counts by season × impervious
+imp_counts <- bee_model_data %>%
+  group_by(season, impervious_num) %>%
+  summarise(n = n(), .groups = "drop")
+
+max_rich <- max(bee_model_data$richness_species, na.rm = TRUE)
+
+ggplot(bee_model_data,
+       aes(x = factor(impervious_num),
+           y = richness_species)) +
+  geom_jitter(width = 0.15, alpha = 0.6, size = 1.8) +
+  stat_summary(fun = mean,
+               geom = "point",
+               shape = 4,
+               size  = 3,
+               color = "red") +
+  geom_text(data = imp_counts,
+            aes(x = factor(impervious_num),
+                y = max_rich + 1,
+                label = paste0("n=", n)),
+            size = 3) +
+  facet_wrap(~ season) +
+  labs(
+    x = "Impervious class (1 = low, 3 = high)",
+    y = "Bee species richness",
+    title = "Bee richness vs impervious surface by season\n(points = sites, red = mean, labels = sample size)"
+  ) +
+  theme_minimal(base_size = 12)
+
+```
+
+```{r}
+late_data <- bee_model_data %>%
+  filter(season == "late")
+
+```
+
+
+```{r}
+# pick numeric variables
+corr_data <- bee_model_data %>%
+  select(
+    richness_species,
+    n_records,
+    tmean_late,
+    floral_richness,
+    prop_generalist
+  )
+
+# compute Pearson correlation matrix
+corr_mat <- cor(corr_data, use = "complete.obs")
+
+
+corr_df <- as.data.frame(as.table(corr_mat))
+names(corr_df) <- c("var1", "var2", "correlation")
+
+
+ggplot(corr_df, aes(x = var1, y = var2, fill = correlation)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = round(correlation, 2)), size = 3) +
+  scale_fill_gradient2(
+    limits = c(-1, 1),
+    midpoint = 0
+  ) +
+  coord_fixed() +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  ) +
+  labs(
+    title = "Correlation among model covariates",
+    x = NULL,
+    y = NULL,
+    fill = "r"
+  )
+
+```
+
+We compared a model with impervious × season interactions to a simpler additive model. AIC favored the simpler model (ΔAIC ≈ 3.4), so we focus on the additive Poisson GLM.
